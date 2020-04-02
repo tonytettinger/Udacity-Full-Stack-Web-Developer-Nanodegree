@@ -1,7 +1,7 @@
 #----------------------------------------------------------------------------#
 # Imports
 #----------------------------------------------------------------------------#
-
+import config
 import json
 import dateutil.parser
 import babel
@@ -19,7 +19,7 @@ from forms import *
 
 app = Flask(__name__)
 moment = Moment(app)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://antaltettinger@localhost:5432/fyyur'
+app.config.from_object('config')db = SQLAlchemy(App)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
