@@ -29,9 +29,13 @@ migrate = Migrate(app, db)
 #----------------------------------------------------------------------------#
 # Models.
 #----------------------------------------------------------------------------#
+show = db.Table('show',
+    db.Column('artist', db.Integer, db.ForeignKey('artist.id'), primary_key=True),
+    db.Column('venue', db.Integer, db.ForeignKey('venue.id'), primary_key=True)
+)
 
 class Venue(db.Model):
-    __tablename__ = 'Venue'
+    __tablename__ = 'venue'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
@@ -41,11 +45,17 @@ class Venue(db.Model):
     phone = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
-
+    genres = db.Column(db.String(250))
+    seeking_description = db.Column(db.Boolean, default=False)
+    # TODO: double check maybe it should be counted based on date
+    upcoming_shows_count = db.Column(db.Integer)
+    past_shows_count = db.Column(db.Integer)
+    venues = db.relationship('Venue', secondary=show,
+      backref=db.backref('venues', lazy=True))
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
 class Artist(db.Model):
-    __tablename__ = 'Artist'
+    __tablename__ = 'artist'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
@@ -56,12 +66,11 @@ class Artist(db.Model):
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
     website = db.Column(db.String(500))
-    seeking_venue = db.Column(Boolean, unique=False, default=False)
+    seeking_venue = db.Column(db.Boolean, default=False)
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
 # TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
-
 #----------------------------------------------------------------------------#
 # Filters.
 #----------------------------------------------------------------------------#
