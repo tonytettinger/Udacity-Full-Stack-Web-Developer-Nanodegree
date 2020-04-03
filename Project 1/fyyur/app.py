@@ -19,7 +19,7 @@ from forms import *
 
 app = Flask(__name__)
 moment = Moment(app)
-app.config.from_object('config')db = SQLAlchemy(App)
+app.config.from_object('config')
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
@@ -68,9 +68,9 @@ class Artist(db.Model):
     website = db.Column(db.String(500))
     seeking_venue = db.Column(db.Boolean, default=False)
 
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
+    # DONE: implement any missing fields, as a database migration using Flask-Migrate
 
-# TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
+# DONE Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
 #----------------------------------------------------------------------------#
 # Filters.
 #----------------------------------------------------------------------------#
@@ -427,11 +427,15 @@ def create_artist_form():
 @app.route('/artists/create', methods=['POST'])
 def create_artist_submission():
   # called upon submitting the new artist listing form
+  form = ArtistForm()
+  flash('Artist ' + request.form['genres'] + ' was successfully listed!')
+  artist = Artist( name, city, state, phone, image_link, genres, facebook_link )
+  #db.session.add(todo)
+  #db.session.commit()
+  #if form.validate_on_submit():
   # TODO: insert form data as a new Venue record in the db, instead
   # TODO: modify data to be the data object returned from db insertion
-
   # on successful db insert, flash success
-  flash('Artist ' + request.form['name'] + ' was successfully listed!')
   # TODO: on unsuccessful db insert, flash an error instead.
   # e.g., flash('An error occurred. Artist ' + data.name + ' could not be listed.')
   return render_template('pages/home.html')
