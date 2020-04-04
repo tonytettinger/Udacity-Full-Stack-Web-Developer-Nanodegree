@@ -51,7 +51,7 @@ class Venue(db.Model):
     upcoming_shows_count = db.Column(db.Integer)
     past_shows_count = db.Column(db.Integer)
     venues = db.relationship('Venue', secondary=show,
-      backref=db.backref('venues', lazy=True))
+      backref=db.backref('venue', lazy=True))
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
 class Artist(db.Model):
@@ -428,17 +428,31 @@ def create_artist_form():
 def create_artist_submission():
   # called upon submitting the new artist listing form
   form = ArtistForm()
-  flash('Artist ' + request.form['genres'] + ' was successfully listed!')
-  artist = Artist( name, city, state, phone, image_link, genres, facebook_link )
-  #db.session.add(todo)
-  #db.session.commit()
+
+  if form.validate():
+    artist = Artist( 
+      name=request.form['name'],
+      city=request.form['city'],
+      state=request.form['state'], 
+      phone=request.form['phone'],
+      facebook_link=request.form['facebook_link'],
+      genres=form.genres.data,
+      image_link=request.form['image_link'],
+      website=request.form['website']
+      )
+    db.session.add(artist)
+    db.session.commit()
+    flash('Artist ' + request.form['genres'] + ' was successfully listed!')
+    return render_template('pages/home.html')
+  else:
+    return render_template('forms/new_artist.html', form=form)
+
   #if form.validate_on_submit():
   # TODO: insert form data as a new Venue record in the db, instead
   # TODO: modify data to be the data object returned from db insertion
   # on successful db insert, flash success
   # TODO: on unsuccessful db insert, flash an error instead.
   # e.g., flash('An error occurred. Artist ' + data.name + ' could not be listed.')
-  return render_template('pages/home.html')
 
 
 #  Shows

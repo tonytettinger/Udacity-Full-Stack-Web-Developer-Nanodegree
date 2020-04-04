@@ -1,7 +1,16 @@
 from datetime import datetime
+import phonenumbers
 from flask_wtf import Form
-from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField
-from wtforms.validators import DataRequired, AnyOf, URL
+from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField, SubmitField
+from wtforms.validators import DataRequired, AnyOf, URL, ValidationError
+
+def check_phone_number(self, phone):
+    try:
+        p = phonenumbers.parse(phone.data)
+        if not phonenumbers.is_valid_number(p):
+            raise ValueError()
+    except (phonenumbers.phonenumberutil.NumberParseException, ValueError):
+        raise ValidationError('Invalid phone number')
 
 class ShowForm(Form):
     artist_id = StringField(
@@ -83,14 +92,14 @@ class VenueForm(Form):
         'address', validators=[DataRequired()]
     )
     phone = StringField(
-        'phone'
+        'phone',
     )
     image_link = StringField(
         'image_link'
     )
     genres = SelectMultipleField(
         # TODO implement enum restriction
-        'genres', validators=[DataRequired()],
+        'genres', validators=[],
         choices=[
             ('Alternative', 'Alternative'),
             ('Blues', 'Blues'),
@@ -113,13 +122,11 @@ class VenueForm(Form):
             ('Other', 'Other'),
         ]
     )
-    facebook_link = StringField(
-        'facebook_link', validators=[URL()]
-    )
+
 
 class ArtistForm(Form):
     name = StringField(
-        'name', validators=[DataRequired()]
+        'name', validators=[]
     )
     city = StringField(
         'city', validators=[DataRequired()]
@@ -182,11 +189,12 @@ class ArtistForm(Form):
     )
     phone = StringField(
         # TODO implement validation logic for state
-        'phone'
+        'phone', validators=[DataRequired(), check_phone_number]
     )
     image_link = StringField(
         'image_link'
     )
+
     genres = SelectMultipleField(
         # TODO implement enum restriction
         'genres', validators=[DataRequired()],
@@ -220,5 +228,6 @@ class ArtistForm(Form):
         # TODO implement enum restriction
         'website', validators=[URL()]
     )
+
 
 # TODO IMPLEMENT NEW ARTIST FORM AND NEW SHOW FORM
