@@ -98,29 +98,32 @@ def index():
 
 @app.route('/venues')
 def venues():
-  # TODO: replace with real venues data.
-  #       num_shows should be aggregated based on number of upcoming shows per venue.
-  data=[{
-    "city": "San Francisco",
-    "state": "CA",
-    "venues": [{
-      "id": 1,
-      "name": "The Musical Hop",
-      "num_upcoming_shows": 0,
-    }, {
-      "id": 3,
-      "name": "Park Square Live Music & Coffee",
-      "num_upcoming_shows": 1,
-    }]
-  }, {
-    "city": "New York",
-    "state": "NY",
-    "venues": [{
-      "id": 2,
-      "name": "The Dueling Pianos Bar",
-      "num_upcoming_shows": 0,
-    }]
-  }]
+  data = []
+  areas = Venue.query.distinct('city','state').all()
+
+  today = datetime.now()
+  today = today.strftime('%Y-%m-%d')
+
+  def get_venue(venue):
+    venue_id = venue.id 
+    upcoming_shows = db.session.query(Show).join(Artist).filter(Show.venue_id == venue_id).filter(
+      Show.start_time>today).all()
+    
+    upcoming_shows_count = 0
+    for show in upcoming_shows:
+        upcoming_shows_count = upcoming_shows_count+1
+    return {'id': venue_id, 'name': venue.name, 'num_upcoming_shows': upcoming_shows_count}
+
+  for area in areas:
+    venues = Venue.query.filter(Venue.city == area.city, Venue.state == area.state).all()
+    record = {
+      'city': area.city,
+      'state': area.state,
+      'venues': [get_venue(venue) for venue in venues],
+    }
+    data.append(record)
+
+
   return render_template('pages/venues.html', areas=data);
 
 @app.route('/venues/search', methods=['POST'])
@@ -224,15 +227,6 @@ def create_venue_submission():
     else:
       return render_template('forms/new_venue.html', form=form)
 
-@app.route('/venues/<venue_id>', methods=['DELETE'])
-def delete_venue(venue_id):
-  # TODO: Complete this endpoint for taking a venue_id, and using
-  # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
-
-  # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
-  # clicking that button delete it from the db then redirect the user to the homepage
-  return None
-
 #  Artists
 #  ----------------------------------------------------------------
 @app.route('/artists')
@@ -242,9 +236,6 @@ def artists():
 
 @app.route('/artists/search', methods=['POST'])
 def search_artists():
-  # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
-  # seach for "A" should return "Guns N Petals", "Matt Quevado", and "The Wild Sax Band".
-  # search for "band" should return "The Wild Sax Band".
   search_term = request.form.get('search_term')
   search_results = Artist.query.filter(Artist.name.ilike(f'%{search_term}%')).all()
   count_results = len(search_results)
@@ -373,26 +364,29 @@ def create_shows():
 
 @app.route('/shows/create', methods=['POST'])
 def create_show_submission():
-  form = ShowForm()
-  if form.validate():
+  try:
+    form = ShowForm()
+    if form.validate():
 
-    artist_id=request.form['artist_id'],
-    venue_id=request.form['venue_id'],
-    start_time=request.form['start_time']
-    artist = Artist.query.get(artist_id)
-    venue = Venue.query.get(venue_id)
-    start_time = start_time
+      artist_id=request.form['artist_id'],
+      venue_id=request.form['venue_id'],
+      start_time=request.form['start_time']
+      artist = Artist.query.get(artist_id)
+      venue = Venue.query.get(venue_id)
+      start_time = start_time
 
-    new_show = Show(artist_id=artist_id, venue_id=venue_id, start_time=start_time)
-    artist.show =[new_show]
-    venue.show =[new_show]
-    db.session.add_all([artist,venue, new_show])
-    db.session.commit()
-    flash('Show was successfully listed!')
-    return render_template('pages/home.html')
-  else:
-    flash('An error occurred. Show could not be listed.')
-    return render_template('forms/new_show.html', form=form)
+      new_show = Show(artist_id=artist_id, venue_id=venue_id, start_time=start_time)
+      artist.show =[new_show]
+      venue.show =[new_show]
+      db.session.add_all([artist,venue, new_show])
+      db.session.commit()
+      flash('Show was successfully listed!')
+      return render_template('pages/home.html')
+    else:
+      flash('An error occurred. Show could not be listed.')
+      return render_template('forms/new_show.html', form=form)
+  except:
+    return render_template('errors/500.html'), 500
 
 @app.errorhandler(404)
 def not_found_error(error):

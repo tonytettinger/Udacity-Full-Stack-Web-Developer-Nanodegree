@@ -26,18 +26,7 @@ class ShowForm(Form):
     )
 
 class VenueForm(Form):
-    name = StringField(
-        'name', validators=[DataRequired()]
-    )
-    seeking_talent = BooleanField(
-        'seeking_talent', validators=[]
-    )
-    city = StringField(
-        'city', validators=[DataRequired()]
-    )
-    state = SelectField(
-        'state', validators=[DataRequired()],
-        choices=[
+    states = [
             ('AL', 'AL'),
             ('AK', 'AK'),
             ('AZ', 'AZ'),
@@ -90,6 +79,21 @@ class VenueForm(Form):
             ('WI', 'WI'),
             ('WY', 'WY'),
         ]
+    anyof = []
+    for state in states:
+        anyof.append(state[0])
+    name = StringField(
+        'name', validators=[DataRequired()]
+    )
+    seeking_talent = BooleanField(
+        'seeking_talent', validators=[]
+    )
+    city = StringField(
+        'city', validators=[DataRequired()]
+    )
+    state = SelectField(
+        'state', validators=[DataRequired(), AnyOf(anyof)],
+        choices=states
     )
     address = StringField(
         'address', validators=[DataRequired()]
