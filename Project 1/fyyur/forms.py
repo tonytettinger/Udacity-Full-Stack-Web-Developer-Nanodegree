@@ -101,15 +101,13 @@ class VenueForm(Form):
             ('Other', 'Other'),
         ]
     anyof = []
-    anyof_genres=[]
+
     for state in states:
         anyof.append(state[0])
     
-    for genre in genres:
-        anyof_genres.append(genre[0])
     
     state = SelectField(
-        'state', validators=[DataRequired(), AnyOf(anyof)],
+        'state', validators=[DataRequired()],
         choices=states
     )
 
@@ -199,7 +197,7 @@ class ArtistForm(Form):
             ('WI', 'WI'),
             ('WY', 'WY'),
         ]
-        genres = [
+    genres = [
             ('Alternative', 'Alternative'),
             ('Blues', 'Blues'),
             ('Classical', 'Classical'),
@@ -221,12 +219,9 @@ class ArtistForm(Form):
             ('Other', 'Other'),
         ]
     anyof = []
-    anyof_genres=[]
     for state in states:
         anyof.append(state[0])
     
-    for genre in genres:
-        anyof_genres.append(genre[0])
     
     state = SelectField(
         'state', validators=[DataRequired(), AnyOf(anyof)],
@@ -235,7 +230,7 @@ class ArtistForm(Form):
 
     genres = SelectMultipleField(
         # TODO implement enum restriction
-        'genres', validators=[DataRequired(), AnyOf(anyof_genres)],
+        'genres', validators=[DataRequired()],
         choices=genres
     )
     name = StringField(
