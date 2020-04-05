@@ -79,35 +79,7 @@ class VenueForm(Form):
             ('WI', 'WI'),
             ('WY', 'WY'),
         ]
-    anyof = []
-    for state in states:
-        anyof.append(state[0])
-    name = StringField(
-        'name', validators=[DataRequired()]
-    )
-    seeking_talent = BooleanField(
-        'seeking_talent', validators=[]
-    )
-    city = StringField(
-        'city', validators=[DataRequired()]
-    )
-    state = SelectField(
-        'state', validators=[DataRequired(), AnyOf(anyof)],
-        choices=states
-    )
-    address = StringField(
-        'address', validators=[DataRequired()]
-    )
-    phone = StringField(
-        'phone', validators=[DataRequired(), check_phone_number]
-    )
-    image_link = StringField(
-        'image_link', validators=[DataRequired(),URL()]
-    )
-    genres = SelectMultipleField(
-        # TODO implement enum restriction
-        'genres', validators=[DataRequired()],
-        choices=[
+        genres = [
             ('Alternative', 'Alternative'),
             ('Blues', 'Blues'),
             ('Classical', 'Classical'),
@@ -128,30 +100,53 @@ class VenueForm(Form):
             ('Soul', 'Soul'),
             ('Other', 'Other'),
         ]
+    anyof = []
+    anyof_genres=[]
+    for state in states:
+        anyof.append(state[0])
+    
+    for genre in genres:
+        anyof_genres.append(genre[0])
+    
+    state = SelectField(
+        'state', validators=[DataRequired(), AnyOf(anyof)],
+        choices=states
     )
-    facebook_link = StringField(
+
+    genres = SelectMultipleField(
         # TODO implement enum restriction
+        'genres', validators=[DataRequired(), AnyOf(anyof_genres)],
+        choices=genres
+    )
+    name = StringField(
+        'name', validators=[DataRequired()]
+    )
+    seeking_talent = BooleanField(
+        'seeking_talent', validators=[]
+    )
+    city = StringField(
+        'city', validators=[DataRequired()]
+    )
+    address = StringField(
+        'address', validators=[DataRequired()]
+    )
+    phone = StringField(
+        'phone', validators=[DataRequired(), check_phone_number]
+    )
+    image_link = StringField(
+        'image_link', validators=[DataRequired(),URL()]
+    )
+    
+    facebook_link = StringField(
         'facebook_link', validators=[URL()]
     )
     website = StringField(
-        # TODO implement enum restriction
         'website', validators=[URL()]
     )
 
 
 class ArtistForm(Form):
-    name = StringField(
-        'name', validators=[]
-    )
-    seeking_venue = BooleanField(
-        'seeking_venue', validators=[]
-    )
-    city = StringField(
-        'city', validators=[DataRequired()]
-    )
-    state = SelectField(
-        'state', validators=[DataRequired()],
-        choices=[
+    states = [
             ('AL', 'AL'),
             ('AK', 'AK'),
             ('AZ', 'AZ'),
@@ -204,19 +199,7 @@ class ArtistForm(Form):
             ('WI', 'WI'),
             ('WY', 'WY'),
         ]
-    )
-    phone = StringField(
-        # TODO implement validation logic for state
-        'phone', validators=[DataRequired(), check_phone_number]
-    )
-    image_link = StringField(
-        'image_link', validators=[DataRequired(),URL()]
-    )
-
-    genres = SelectMultipleField(
-        # TODO implement enum restriction
-        'genres', validators=[DataRequired()],
-        choices=[
+        genres = [
             ('Alternative', 'Alternative'),
             ('Blues', 'Blues'),
             ('Classical', 'Classical'),
@@ -237,13 +220,44 @@ class ArtistForm(Form):
             ('Soul', 'Soul'),
             ('Other', 'Other'),
         ]
+    anyof = []
+    anyof_genres=[]
+    for state in states:
+        anyof.append(state[0])
+    
+    for genre in genres:
+        anyof_genres.append(genre[0])
+    
+    state = SelectField(
+        'state', validators=[DataRequired(), AnyOf(anyof)],
+        choices=states
+    )
+
+    genres = SelectMultipleField(
+        # TODO implement enum restriction
+        'genres', validators=[DataRequired(), AnyOf(anyof_genres)],
+        choices=genres
+    )
+    name = StringField(
+        'name', validators=[]
+    )
+    seeking_venue = BooleanField(
+        'seeking_venue', validators=[]
+    )
+    city = StringField(
+        'city', validators=[DataRequired()]
+    )
+    
+    phone = StringField(
+        'phone', validators=[DataRequired(), check_phone_number]
+    )
+    image_link = StringField(
+        'image_link', validators=[DataRequired(),URL()]
     )
     facebook_link = StringField(
-        # TODO implement enum restriction
         'facebook_link', validators=[URL()]
     )
     website = StringField(
-        # TODO implement enum restriction
         'website', validators=[URL()]
     )
 
