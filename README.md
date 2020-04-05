@@ -3,7 +3,7 @@ Udacity's Full Stack Web Developer Nanodegree Project repository
 
 #### Full Stack Web Developer Nanodegree projects:
 
-- [] **Project 1** - Design a Venue Booking Database
+- [x] **Project 1** - Design a Venue Booking Database
 
 The fictitious startup Fy-yur is building a website that facilitates bookings between artists who can play at venues, and venues who want to book artists. This site:
   - Lets venue managers and artists sign up, fill out their information, and list their availability for shows.
@@ -13,7 +13,7 @@ The fictitious startup Fy-yur is building a website that facilitates bookings be
   venues where the artist has played/will be playing.
   The goal of this project is to build out the data models for this booking application.
 
-    - [code]()
+    - [code](https://github.com/tonytettinger/Udacity-Full-Stack-Web-Developer-Nanodegree/tree/master/Project%201/fyyur)
     - [preview]()
 
 - [] **Project 2** - Trivia API
