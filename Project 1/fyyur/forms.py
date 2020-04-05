@@ -1,7 +1,7 @@
 from datetime import datetime
 import phonenumbers
 from flask_wtf import Form
-from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField, SubmitField
+from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField, SubmitField, BooleanField
 from wtforms.validators import DataRequired, AnyOf, URL, ValidationError
 
 def check_phone_number(self, phone):
@@ -28,6 +28,9 @@ class ShowForm(Form):
 class VenueForm(Form):
     name = StringField(
         'name', validators=[DataRequired()]
+    )
+    seeking_talent = BooleanField(
+        'seeking_talent', validators=[DataRequired()]
     )
     city = StringField(
         'city', validators=[DataRequired()]

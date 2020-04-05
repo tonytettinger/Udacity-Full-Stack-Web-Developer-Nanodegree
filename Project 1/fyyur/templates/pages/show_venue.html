@@ -30,11 +30,11 @@
 		<p>
 			<i class="fab fa-facebook-f"></i> {% if venue.facebook_link %}<a href="{{ venue.facebook_link }}" target="_blank">{{ venue.facebook_link }}</a>{% else %}No Facebook Link{% endif %}
 		</p>
-		{% if venue.seeking_talent %}
+		{% if venue.seeking_description %}
 		<div class="seeking">
 			<p class="lead">Currently seeking talent</p>
 			<div class="description">
-				<i class="fas fa-quote-left"></i> {{ venue.seeking_description }} <i class="fas fa-quote-right"></i>
+				<i class="fas fa-quote-left"></i> {{ venue.seeking_text }} <i class="fas fa-quote-right"></i>
 			</div>
 		</div>
 		{% else %}	

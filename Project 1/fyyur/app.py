@@ -52,10 +52,6 @@ class Venue(db.Model):
     seeking_description = db.Column(db.Boolean, default=False)
     shows_venue = db.relationship('Show', backref='venue')
 
-    # TODO: double check maybe it should be counted based on date
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
-
-
 class Artist(db.Model):
     __tablename__ = 'artist'
 
@@ -169,12 +165,17 @@ def show_venue(venue_id):
     "past_shows_count": 1,
     "upcoming_shows_count": 0,
   }
-  venue = Venue.query.get(1)
+  venue = Venue.query.get(venue_id)
   arr = venue.genres[1:-1] 
   arr = ''.join(arr).split(",")
   venue.genres = arr
   today = datetime.now()
   today = today.strftime('%Y-%m-%d')
+  if venue.seeking_description:
+    venue.seeking_text = "We are on the lookout for a local artist to play every two weeks. Please call us."
+  else:
+    flash('not seeking')
+
   
   upcoming_shows = db.session.query(Show).join(Artist).filter(Show.venue_id == venue_id).filter(
     Show.start_time>today).all()
@@ -230,11 +231,11 @@ def create_venue_submission():
         genres=form.genres.data,
         image_link=request.form['image_link'],
         facebook_link=request.form['facebook_link'],
-        website=request.form['website']
+        website=request.form['website'],
+        seeking_description=form.seeking_talent.data
         )
       db.session.add(venue)
       db.session.commit()
-      flash('Venue ' + request.form['name'] + ' was successfully listed!')
       return render_template('pages/home.html')
     else:
       return render_template('forms/new_venue.html', form=form)
