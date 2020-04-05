@@ -107,13 +107,13 @@ class VenueForm(Form):
     
     
     state = SelectField(
-        'state', validators=[DataRequired()],
+        'state', validators=[DataRequired(), AnyOf(anyof)],
         choices=states
     )
 
     genres = SelectMultipleField(
         # TODO implement enum restriction
-        'genres', validators=[DataRequired(), AnyOf(anyof_genres)],
+        'genres', validators=[DataRequired()],
         choices=genres
     )
     name = StringField(
