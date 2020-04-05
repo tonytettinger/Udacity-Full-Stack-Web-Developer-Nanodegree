@@ -1,6 +1,24 @@
 {% extends 'layouts/main.html' %}
 {% block title %}New Show Listing{% endblock %}
 {% block content %}
+
+{% if form.errors %}
+  <h3> Submission error(s) </h3>
+    <ul class="user-msg error">
+    {% for field in form %}
+        {% for error in field.errors %}
+            <li>
+              {% if field != '__all__' %}
+                <strong>{{ field.label }}:</strong>
+              {% endif %}
+              {{ error }}
+            </li>
+        {% endfor %}
+    {% endfor %}
+    </ul>
+    <div> Please correct the above mentioned submission field error(s).</div>
+{% endif %}
+
   <div class="form-wrapper">
     <form method="post" class="form">
       <h3 class="form-heading">List a new show</h3>
@@ -19,6 +37,7 @@
           {{ form.start_time(class_ = 'form-control', placeholder='YYYY-MM-DD HH:MM', autofocus = true) }}
         </div>
       <input type="submit" value="Create Venue" class="btn btn-primary btn-lg btn-block">
+      {{ form.csrf_token() }}
     </form>
   </div>
 {% endblock %}

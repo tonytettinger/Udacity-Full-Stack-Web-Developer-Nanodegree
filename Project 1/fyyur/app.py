@@ -14,6 +14,8 @@ from logging import Formatter, FileHandler
 from flask_wtf import Form
 from forms import *
 from sqlalchemy.types import PickleType
+from sqlalchemy.sql import func
+from datetime import datetime
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
@@ -30,11 +32,11 @@ migrate.init_app(app)
 #----------------------------------------------------------------------------#
 # Models.
 #----------------------------------------------------------------------------#
-show = db.Table('show',
-    db.Column('artist', db.Integer, db.ForeignKey('artist.id'), primary_key=True),
-    db.Column('venue', db.Integer, db.ForeignKey('venue.id'), primary_key=True),
-    db.Column('date', db.DateTime)
-)
+class Show(db.Model):
+    __tablename__ = 'show'
+    venue_id = db.Column(db.Integer, db.ForeignKey('venue.id'), primary_key=True)
+    artist_id = db.Column(db.Integer, db.ForeignKey('artist.id'), primary_key=True)
+    start_time = db.Column(db.DateTime)
 
 class Venue(db.Model):
     __tablename__ = 'venue'
@@ -49,8 +51,8 @@ class Venue(db.Model):
     genres = db.Column(db.String(500))
     website = db.Column(db.String(500))
     seeking_description = db.Column(db.Boolean, default=False)
-    artist = db.relationship('Artist', secondary=show,
-      backref=db.backref('venue', lazy=True))
+    shows_venue = db.relationship('Show', backref='venue')
+
     # TODO: double check maybe it should be counted based on date
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
@@ -68,6 +70,7 @@ class Artist(db.Model):
     facebook_link = db.Column(db.String(120))
     website = db.Column(db.String(500))
     seeking_venue = db.Column(db.Boolean, default=False)
+    shows_art = db.relationship('Show', backref='artist')
 
     # DONE: implement any missing fields, as a database migration using Flask-Migrate
 
@@ -171,6 +174,25 @@ def show_venue(venue_id):
   arr = venue.genres[1:-1] 
   arr = ''.join(arr).split(",")
   venue.genres = arr
+
+  upcoming_shows = db.session.query(Show).join(Artist).filter(Show.venue_id == venue_id).filter(
+    Show.start_time.strftime("%m/%d/%Y, %H:%M")>datetime.now()).all()
+  past_shows = db.session.query(Show).join(Artist).filter(Show.venue_id == venue_id).filter(
+    Show.start_time.strftime("%m/%d/%Y, %H:%M") < datetime.now()).all()
+
+  past_show_render_data = []
+  past_shows_count = 0
+  for show in past_shows:
+    past_shows_count += 1
+    past_show_render_data.append(
+      {
+        "start_time" : show.start_time,
+        "artist_id" : show.artist_id
+      }
+    )
+
+  venue.past_shows_count = past_shows_count
+  venue.past_shows = past_show_render_data
   return render_template('pages/show_venue.html', venue=venue)
 
 #  Create Venue
@@ -473,13 +495,17 @@ def create_shows():
 def create_show_submission():
   form = ShowForm()
   if form.validate():
+
     artist_id=request.form['artist_id'],
     venue_id=request.form['venue_id'],
     start_time=request.form['start_time']
     artist = Artist.query.get(artist_id)
     venue = Venue.query.get(venue_id)
-    venue.artist = [artist]
-    db.session.add(venue)
+
+    new_show = Show(artist_id=artist_id, venue_id=venue_id, start_time=start_time)
+    artist.show =[new_show]
+    venue.show =[new_show]
+    db.session.add_all([artist,venue, new_show])
     db.session.commit()
     flash('Show was successfully listed!')
     return render_template('pages/home.html')
