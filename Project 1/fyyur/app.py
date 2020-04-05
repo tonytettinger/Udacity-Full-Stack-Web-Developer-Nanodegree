@@ -223,10 +223,12 @@ def create_venue_submission():
         )
       db.session.add(venue)
       db.session.commit()
+      flash('Venue ' + request.form['name'] + ' was successfully listed!')
       return render_template('pages/home.html')
     else:
+      flash('An error occured. Venue ' + request.form['name'] + ' could not be listed. Please correct submission.')
       return render_template('forms/new_venue.html', form=form)
-
+  
 #  Artists
 #  ----------------------------------------------------------------
 @app.route('/artists')
