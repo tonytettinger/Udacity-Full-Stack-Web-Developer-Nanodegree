@@ -13,7 +13,6 @@ import logging
 from logging import Formatter, FileHandler
 from flask_wtf import Form
 from forms import *
-from sqlalchemy.types import PickleType
 from sqlalchemy.sql import func
 from datetime import datetime
 #----------------------------------------------------------------------------#
@@ -24,7 +23,7 @@ app = Flask(__name__)
 moment = Moment(app)
 app.config.from_object('config')
 db = SQLAlchemy(app)
-migrate = Migrate(app, db)
+migrate = Migrate(app, db, compare_type=True)
 migrate.init_app(app)
 
 # TODO: connect to a local postgresql database
@@ -36,7 +35,7 @@ class Show(db.Model):
     __tablename__ = 'show'
     venue_id = db.Column(db.Integer, db.ForeignKey('venue.id'), primary_key=True)
     artist_id = db.Column(db.Integer, db.ForeignKey('artist.id'), primary_key=True)
-    start_time = db.Column(db.DateTime)
+    start_time = db.Column(db.DateTime, primary_key=True)
 
 class Venue(db.Model):
     __tablename__ = 'venue'
@@ -174,25 +173,38 @@ def show_venue(venue_id):
   arr = venue.genres[1:-1] 
   arr = ''.join(arr).split(",")
   venue.genres = arr
-
+  today = datetime.now()
+  today = today.strftime('%Y-%m-%d')
+  
   upcoming_shows = db.session.query(Show).join(Artist).filter(Show.venue_id == venue_id).filter(
-    Show.start_time.strftime("%m/%d/%Y, %H:%M")>datetime.now()).all()
+    Show.start_time>today).all()
   past_shows = db.session.query(Show).join(Artist).filter(Show.venue_id == venue_id).filter(
-    Show.start_time.strftime("%m/%d/%Y, %H:%M") < datetime.now()).all()
+    Show.start_time<today).all()
+  #Function to get filtered shows data for display, past or upcoming
+  def shows(shows):
+    show_render_data = []
+    shows_count = 0
+    for show in shows:
+      shows_count = shows_count+1
+      show_render_data.append(
+        {
+          "start_time" : show.start_time,
+          "artist_id" : show.artist_id,
+          "artist_image_link" : show.artist.image_link,
+          "artist_name" : show.artist.name
+        }
+      )
+    return [shows_count, show_render_data]
 
-  past_show_render_data = []
-  past_shows_count = 0
-  for show in past_shows:
-    past_shows_count += 1
-    past_show_render_data.append(
-      {
-        "start_time" : show.start_time,
-        "artist_id" : show.artist_id
-      }
-    )
+  past_shows = shows(past_shows)
+  upcoming_shows = shows(upcoming_shows)
 
-  venue.past_shows_count = past_shows_count
-  venue.past_shows = past_show_render_data
+  venue.past_shows_count = past_shows[0]
+  venue.past_shows = past_shows[1]
+
+  venue.upcoming_shows_count = upcoming_shows[0]
+  venue.upcoming_shows = upcoming_shows[1]
+
   return render_template('pages/show_venue.html', venue=venue)
 
 #  Create Venue
@@ -501,6 +513,7 @@ def create_show_submission():
     start_time=request.form['start_time']
     artist = Artist.query.get(artist_id)
     venue = Venue.query.get(venue_id)
+    start_time = start_time
 
     new_show = Show(artist_id=artist_id, venue_id=venue_id, start_time=start_time)
     artist.show =[new_show]
