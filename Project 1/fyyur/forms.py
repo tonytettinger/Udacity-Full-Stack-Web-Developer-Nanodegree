@@ -30,7 +30,7 @@ class VenueForm(Form):
         'name', validators=[DataRequired()]
     )
     seeking_talent = BooleanField(
-        'seeking_talent', validators=[DataRequired()]
+        'seeking_talent', validators=[]
     )
     city = StringField(
         'city', validators=[DataRequired()]
@@ -138,6 +138,9 @@ class VenueForm(Form):
 class ArtistForm(Form):
     name = StringField(
         'name', validators=[]
+    )
+    seeking_venue = BooleanField(
+        'seeking_venue', validators=[]
     )
     city = StringField(
         'city', validators=[DataRequired()]
