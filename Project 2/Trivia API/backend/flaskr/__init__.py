@@ -33,36 +33,15 @@ def create_app(test_config=None):
   Create an endpoint to handle GET requests 
   for all available categories.
   '''
-  @app.route('/questions')
-  def get_questions():
-      page = int(request.args.get('page')) - 1
-      query_all = Question.query
+
+  @app.route('/categories')
+  def get_categories():
       query_categories = Category.query.all()
-      questions_current_page = query_all.limit(10).offset(page)
-      question_total = query_all.count()
-      questions_dict = []
       categories_dict = {}
       for row in query_categories:
         categories_dict[row.id] = row.type
-
-      for row in questions_current_page:
-        current_question = {
-          'id' : row.id,
-          'question' : row.question,
-          'answer' : row.answer,
-          'category' : row.category,
-          'difficulty' : row.difficulty
-        }
-        questions_dict.append(current_question)
-
-      answer =  {
-          'questions': questions_dict,
-          'totalQuestions': question_total,
-          'categories': categories_dict,
-          'currentCategory': 'None' 
-          }
       
-      return jsonify(answer)
+      return jsonify({'categories': categories_dict})
 
   '''
   @TODO: 
@@ -77,6 +56,37 @@ def create_app(test_config=None):
   Clicking on the page numbers should update the questions. 
   '''
 
+  @app.route('/questions', methods=['GET'])
+  def get_questions():
+      page = int(request.args.get('page')) - 1
+      query_all = Question.query
+      query_categories = Category.query.all()
+      questions_current_page = query_all.limit(10).offset(page)
+      question_total = len(query_categories)  
+      questions_list = []
+      categories_dict = {}
+      for row in query_categories:
+        categories_dict[row.id] = row.type
+
+      for row in questions_current_page:
+        current_question = {
+          'id' : row.id,
+          'question' : row.question,
+          'answer' : row.answer,
+          'category' : row.category,
+          'difficulty' : row.difficulty
+        }
+        questions_list.append(current_question)
+
+      answer =  {
+          'questions': questions_list,
+          'totalQuestions': question_total,
+          'categories': categories_dict,
+          'currentCategory': 'None' 
+          }
+      
+      return jsonify(answer)
+
   '''
   @TODO: 
   Create an endpoint to DELETE question using a question ID. 
@@ -84,6 +94,14 @@ def create_app(test_config=None):
   TEST: When you click the trash icon next to a question, the question will be removed.
   This removal will persist in the database and when you refresh the page. 
   '''
+
+  @app.route('/questionsDelete/<int:delete_id>', methods=['DELETE'])
+  def delete_question(delete_id):
+    Question.query.filter_by(Id=delete_id).delete()
+
+    return jsonify(result = {
+      'success': True,
+    })
 
   '''
   @TODO: 
@@ -96,6 +114,25 @@ def create_app(test_config=None):
   of the questions list in the "List" tab.  
   '''
 
+  @app.route('/questionsPost', methods=['POST'])
+  def post_question():
+      body = request.get_json()
+      data = {
+        'question': body['question'],
+        'answer': body['answer'],
+        'category': body['category'],
+        'difficulty': body['difficulty']
+      }
+    
+      question = Question(**data)
+      question.insert()
+    
+      result = {
+        'success': True,
+      }
+      return jsonify(result)
+
+
   '''
   @TODO: 
   Create a POST endpoint to get questions based on a search term. 
@@ -106,6 +143,29 @@ def create_app(test_config=None):
   only question that include that string within their question. 
   Try using the word "title" to start. 
   '''
+  @app.route('/questionsSearch', methods=['POST'])
+  def search_questions():
+      body = request.get_json()
+      search_term = body['searchTerm']
+      questions_list = []
+
+      search_query = Question.query.filter(Question.question.ilike('%' + search_term + '%'))
+      for row in search_query:
+        current_question = {
+          'id' : row.id,
+          'question' : row.question,
+          'answer' : row.answer,
+          'category' : row.category,
+          'difficulty' : row.difficulty
+        }
+        questions_list.append(current_question)
+
+      return jsonify({
+          'questions': questions_list,
+          'totalQuestions': len(questions_list),
+          'currentCategory': 'None'
+          })
+      
 
   '''
   @TODO: 
@@ -116,6 +176,7 @@ def create_app(test_config=None):
   category to be shown. 
   '''
 
+ 
 
   '''
   @TODO: 
@@ -128,6 +189,29 @@ def create_app(test_config=None):
   one question at a time is displayed, the user is allowed to answer
   and shown whether they were correct or not. 
   '''
+
+  @app.route('/quizzes', methods=['POST'])
+  def quizzes_search():
+    body = request.get_json()
+    previous_questions = body['previous_questions']
+    quiz_category = body['quiz_category']
+    quiz_category_id = quiz_category['id']
+    filtered_question = Question.query.filter(Question.category == quiz_category_id).filter(~Question.id.in_(previous_questions)).first()
+    
+    if filtered_question == None:
+      return jsonify({
+          'question' : None
+        })
+    filtered_q_as_d = filtered_question.__dict__
+    current_question = {}
+    current_question['question'] = filtered_q_as_d['question']
+    current_question['answer'] = filtered_q_as_d['answer']
+    current_question['id'] = filtered_q_as_d['id']
+
+    return jsonify({
+          'question' : current_question
+        })
+
 
   '''
   @TODO: 

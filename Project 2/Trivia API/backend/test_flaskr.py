@@ -2,7 +2,6 @@ import os
 import unittest
 import json
 from flask_sqlalchemy import SQLAlchemy
-
 from flaskr import create_app
 from models import setup_db, Question, Category
 
@@ -29,10 +28,41 @@ class TriviaTestCase(unittest.TestCase):
         """Executed after reach test"""
         pass
 
+
     """
     TODO
     Write at least one test for each test for successful operation and for expected errors.
     """
+    def test_get_questions(self):
+        res = self.client().get('/questions?page=1')
+        question_data = json.loads(res.data)
+        self.assertEqual(len(question_data['questions']), 10)
+
+    def test_post_new_question(self):
+        data = {
+            'question': 'what?',
+            'answer': 'yes',
+            'category': 3,
+            'difficulty': 2,
+        }
+        question = Question(**data)
+        question.insert()
+        question_return = Question.query.filter_by(question='what?')
+        current_question = {}
+        for row in question_return:
+            current_question = {
+                'question' : row.question,
+                'answer' : row.answer,
+                'category' : row.category,
+                'difficulty' : row.difficulty
+            }
+        self.assertDictEqual(current_question, data)
+        question_return.delete()
+
+
+        
+
+
 
 
 # Make the tests conveniently executable

@@ -20,6 +20,8 @@ class FormView extends Component {
       url: `/categories`, //TODO: update request URL
       type: "GET",
       success: (result) => {
+
+        console.log(result)
         this.setState({ categories: result.categories })
         return;
       },
@@ -34,7 +36,7 @@ class FormView extends Component {
   submitQuestion = (event) => {
     event.preventDefault();
     $.ajax({
-      url: '/questions', //TODO: update request URL
+      url: '/questionsPost', //TODO: update request URL
       type: "POST",
       dataType: 'json',
       contentType: 'application/json',
@@ -49,6 +51,7 @@ class FormView extends Component {
       },
       crossDomain: true,
       success: (result) => {
+        console.log(result)
         document.getElementById("add-question-form").reset();
         return;
       },

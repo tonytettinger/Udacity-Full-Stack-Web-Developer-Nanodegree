@@ -78,8 +78,9 @@ class QuestionView extends Component {
   }
 
   submitSearch = (searchTerm) => {
+    console.log(searchTerm)
     $.ajax({
-      url: `/questions`, //TODO: update request URL
+      url: `/questionsSearch`,
       type: "POST",
       dataType: 'json',
       contentType: 'application/json',
@@ -89,6 +90,7 @@ class QuestionView extends Component {
       },
       crossDomain: true,
       success: (result) => {
+        console.log(result)
         this.setState({
           questions: result.questions,
           totalQuestions: result.total_questions,
@@ -106,7 +108,7 @@ class QuestionView extends Component {
     if(action === 'DELETE') {
       if(window.confirm('are you sure you want to delete the question?')) {
         $.ajax({
-          url: `/questions/${id}`, //TODO: update request URL
+          url: `/questionsDelete/${id}`, //TODO: update request URL
           type: "DELETE",
           success: (result) => {
             this.getQuestions();
