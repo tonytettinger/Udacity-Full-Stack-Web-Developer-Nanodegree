@@ -37,20 +37,28 @@ def create_app(test_config=None):
   def get_questions():
       page = int(request.args.get('page')) - 1
       query_all = Question.query
+      query_categories = Category.query.all()
       questions_current_page = query_all.limit(10).offset(page)
       question_total = query_all.count()
-      questions = []
-      categories = []
+      questions_dict = []
+      categories_dict = {}
+      for row in query_categories:
+        categories_dict[row.id] = row.type
+
       for row in questions_current_page:
-        questions.append(row.question)
-        category = row.category
-        if(category not in categories):
-          categories.append(row.category)
+        current_question = {
+          'id' : row.id,
+          'question' : row.question,
+          'answer' : row.answer,
+          'category' : row.category,
+          'difficulty' : row.difficulty
+        }
+        questions_dict.append(current_question)
 
       answer =  {
-          'questions': questions,
+          'questions': questions_dict,
           'totalQuestions': question_total,
-          'categories': categories,
+          'categories': categories_dict,
           'currentCategory': 'None' 
           }
       
