@@ -33,15 +33,6 @@ def create_app(test_config=None):
       
       return jsonify({'categories': categories_dict})
 
-  '''
-  @TODO: 
-
-  TEST: At this point, when you start the application
-  you should see questions and categories generated,
-  ten questions per page and pagination at the bottom of the screen for three pages.
-  Clicking on the page numbers should update the questions. 
-  '''
-
 #helper function to convert the query results to a dict for sending back in a JSON format
   def convert_questions_to_dict(query):
     questions_list = []
@@ -61,7 +52,7 @@ def create_app(test_config=None):
   def get_questions():
 
     if not request.method == 'GET':
-      abort(405)
+      abort(405)  
 
     try:
       page = int(request.args.get('page')) - 1
@@ -96,6 +87,9 @@ def create_app(test_config=None):
     except:
       db.session.rollback()
       abort(422)
+
+    finally: 
+      db.session.close()
 
   @app.route('/questionsDelete/<int:delete_id>', methods=['DELETE'])
   def delete_question(delete_id):
