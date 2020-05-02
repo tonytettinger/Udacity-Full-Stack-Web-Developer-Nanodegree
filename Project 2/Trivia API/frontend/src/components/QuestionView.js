@@ -3,7 +3,6 @@ import React, { Component } from 'react';
 import '../stylesheets/App.css';
 import Question from './Question';
 import Search from './Search';
-import Pagination from './Pagination';
 import $ from 'jquery';
 
 class QuestionView extends Component {
@@ -31,7 +30,6 @@ class QuestionView extends Component {
           questions: result.questions,
           totalQuestions: result.totalQuestions,
           categories: result.categories })
-          console.log("Total questions: ", this.state.totalQuestions)
         return;
       },
       error: (error) => {
@@ -89,10 +87,10 @@ class QuestionView extends Component {
       },
       crossDomain: true,
       success: (result) => {
-        console.log(result)
         this.setState({
           questions: result.questions,
-          totalQuestions: result.total_questions
+          totalQuestions: result.total_questions,
+          currentCategory: null
          })
         return;
       },
@@ -106,7 +104,6 @@ class QuestionView extends Component {
   questionAction = (id) => (action) => {
     if(action === 'DELETE') {
       if(window.confirm('are you sure you want to delete the question?')) {
-        console.log('before ajax current', this.state.currentCategory)
         $.ajax({
           url: `/questionsDelete/${id}`, //TODO: update request URL
           type: "DELETE",
