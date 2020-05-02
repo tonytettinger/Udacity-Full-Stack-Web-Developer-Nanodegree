@@ -32,7 +32,8 @@ def query_test_post():
 
 def delete_test_post():
     query = Question.query.filter_by(question="Test Question?").first()
-    query.deletes()
+    if query is not None:
+        query.deletes()
 
 class TriviaTestCase(unittest.TestCase):
     """This class represents the trivia test case"""
@@ -44,7 +45,7 @@ class TriviaTestCase(unittest.TestCase):
         self.database_name = "trivia_test"
         self.database_path = "postgres://{}/{}".format('localhost:5432', self.database_name)
         setup_db(self.app, self.database_path)
-        self.test_post = data = {
+        self.test_post = {
         'question': 'Test Question?',
         'answer': 'Yes this is a test question.',
         'category': 3,
@@ -62,18 +63,26 @@ class TriviaTestCase(unittest.TestCase):
         pass
 
     """
-    TODO
-    Write at least one test for each test for successful operation and for expected errors.
+    TEST: Endpoint GET /questions?page=1
     """
 
     def test_get_questions(self):
         res = self.client().get('/questions?page=1')
         question_data = json.loads(res.data)
         self.assertEqual(len(question_data['questions']), 10)
+        delete_test_post()
+
+    def test_get_questions_400(self):
+        response = self.client().get('/questions?page=x')
+        json_response_data = json.loads(response.data)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(json_response_data["error"], 400)
+        delete_test_post()
 
     '''
-    TEST: When you click the trash icon next to a question, the question will be removed.
-    This removal will persist in the database and when you refresh the page. 
+    TEST:  Endpoint DELETE /questionsDelete/<int:post_id>
+    When you click the trash icon next to a question, the question will be removed.
+    This removal will persist in the database and when you refresh the page.
     '''
     def test_delete_question(self):
         insert_test_post()
@@ -91,25 +100,92 @@ class TriviaTestCase(unittest.TestCase):
         deleted = Question.query.get(post_id)
         self.assertIsNone( deleted )
     """
-    Test API responses with 405 Method Not Allowed when
-    requesting delete using wrong method.
+    TEST: Endpoint DELETE /questionsDelete/<int:post_id>, 405 
+    Method Not Allowed when requesting delete using wrong method.
     """
     def test_delete_wrong_method_error_handling(self):
         insert_test_post()
         post = query_test_post()
-        post_id = post.id
-
         #Check the post exists before deleting
         self.assertIsNotNone(post)
-        delete_json = {
-            'currentCategory' : 3
-        }
+
         #Click on the trash icon
-        response = self.client().get(f"/questionsDelete/{post_id}", data=json.dumps(delete_json), content_type='application/json')
+        response = self.client().get(f"/questionsPost", data=json.dumps(self.test_post), content_type='application/json')
         json_response_data = json.loads(response.data)
         self.assertEqual(response.status_code, 405)
         self.assertEqual(json_response_data["error"], 405)
         delete_test_post()
+
+    '''
+    TEST: Endpoint POST /questionsPost
+    '''
+    def test_post_question(self):
+        self.client().post(f"/questionsPost", data=json.dumps(self.test_post), content_type='application/json')
+        test_post = query_test_post()
+        self.assertIsNotNone(test_post)
+        delete_test_post()
+    '''
+    TEST: Endpoint POST /questionsPost, 422
+    Missing submission field
+    '''
+    def test_post_question(self):
+        wrong_post = self.test_post
+        #Simulate missing answer 
+        wrong_post.pop('answer')
+
+        response =self.client().post(f"/questionsPost", data=json.dumps(wrong_post), content_type='application/json')
+        json_response_data = json.loads(response.data)
+        self.assertEqual(response.status_code, 422)
+        self.assertEqual(json_response_data["error"], 422)
+        delete_test_post()
+    
+    '''
+    TEST: Endpoint POST /questionsSearch
+    Search by any phrase. The questions list will update to include 
+    only question that include that string within their question. 
+    Using the phrase "Test Question" from the test data. 
+    '''
+    def test_search(self):
+        insert_test_post()
+        search_term = {
+            'searchTerm': 'Test Question?'
+        }
+        #First do a search by SQL directly from the database
+        questions_search_query = Question.query.filter_by(question="Test Question?").all()
+        response = self.client().post(f"/questionsSearch", data=json.dumps(search_term), content_type='application/json')
+        json_response_data = json.loads(response.data)
+        #Check if the database query is the same length as the endpoint query
+        self.assertEqual(len(json_response_data['questions']), len(questions_search_query))
+        delete_test_post()
+    
+    def test_search_404(self):
+        insert_test_post()
+        search_term = {
+            'searchTerm': 'Not existing term'
+        }
+
+        response = self.client().post(f"/questionsSearch", data=json.dumps(search_term), content_type='application/json')
+        json_response_data = json.loads(response.data)
+        #Check if the database query is the same length as the endpoint query
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(json_response_data["error"], 404)
+        delete_test_post()
+
+    '''
+    TEST: Endpoint GET /categories/<int:category_id>/questions 
+    In the "List" tab / main screen, clicking on one of the 
+    categories in the left column will cause only questions of that 
+    category to be shown. 
+    '''
+    def test_get_categories(self):
+        insert_test_post()
+        response = self.client().get("/categories/3/questions")
+        json_response_data = json.loads(response.data)
+        self.assertEqual(response.status_code, 200)
+        for data in json_response_data['questions']:
+            self.assertEqual(data['category'], 3)
+
+
 
 # Make the tests conveniently executable
 if __name__ == "__main__":

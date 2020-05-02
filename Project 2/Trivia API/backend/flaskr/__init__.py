@@ -6,6 +6,8 @@ import random
 
 from models import setup_db, Question, Category
 
+
+db = SQLAlchemy()
 QUESTIONS_PER_PAGE = 10
 
 def create_app(test_config=None):
@@ -16,12 +18,14 @@ def create_app(test_config=None):
 
   @app.after_request
   def after_request(response):
+
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,true')
     response.headers.add('Access-Control-Allow-Methods', 'GET,PATCH,POST,DELETE,OPTIONS')
     return response
 
   @app.route('/categories')
   def get_categories():
+
       query_categories = Category.query.all()
       categories_dict = {}
       for row in query_categories:
@@ -53,17 +57,28 @@ def create_app(test_config=None):
         questions_list.append(current_question)
     return questions_list
 
-
   @app.route('/questions', methods=['GET'])
   def get_questions():
+
+    if not request.method == 'GET':
+      abort(405)
+
+    try:
       page = int(request.args.get('page')) - 1
-      query_all = Question.query
-      query_count = query_all.count()
-      query_categories = Category.query.all()
 
-      if len(query_categories) == 0:
-        abort(404)
+    except:
+      abort(400) 
+    query_all = Question.query
 
+    if query_all is None:
+      abort(404)
+    query_count = query_all.count()
+    query_categories = Category.query.all()
+
+    if len(query_categories) == 0:
+      abort(404)
+
+    try:
       questions_current_page = query_all.limit(10).offset(page)
       
       categories_dict = {}
@@ -75,110 +90,142 @@ def create_app(test_config=None):
           'totalQuestions': query_count,
           'categories': categories_dict
           }
-      
+      db.session.commit()   
       return jsonify(answer)
+
+    except:
+      db.session.rollback()
+      abort(422)
 
   @app.route('/questionsDelete/<int:delete_id>', methods=['DELETE'])
   def delete_question(delete_id):
+
     if not request.method == 'DELETE':
       abort(405)
+
     body = request.get_json()
     currentCategory = body['currentCategory']
     question_to_delete = Question.query.get(delete_id)
+
     if question_to_delete is None:
       abort(404)
-    question_to_delete.deletes()
-    question = convert_questions_to_dict(Question.query.filter_by(category=currentCategory))
 
-    return jsonify({
-      'success': True,
-      'question' : question
-    })
+    try:
+      question_to_delete.deletes()
+      question = convert_questions_to_dict(Question.query.filter_by(category=currentCategory))
+      db.session.commit()
+      return jsonify({
+        'status' : 200,
+        'success': True,
+        'question' : question
+      })
 
-  '''
-  @TODO: 
-  Create an endpoint to POST a new question, 
-  which will require the question and answer text, 
-  category, and difficulty score.
+    except:
+      db.session.rollback()
+      abort(422)
 
-  TEST: When you submit a question on the "Add" tab, 
-  the form will clear and the question will appear at the end of the last page
-  of the questions list in the "List" tab.  
-  '''
+    finally:
+      db.session.close()
 
   @app.route('/questionsPost', methods=['POST'])
   def post_question():
-      body = request.get_json()
-      data = {
-        'question': body['question'],
-        'answer': body['answer'],
-        'category': body['category'],
-        'difficulty': body['difficulty']
-      }
 
-      for key in data:
-        if not data[key]:
-          abort(422)
+    if not request.method == 'POST':
+      abort(405)
 
+    try:
+        body = request.get_json()
+        data = {
+          'question': body['question'],
+          'answer': body['answer'],
+          'category': body['category'],
+          'difficulty': body['difficulty']
+        }
+
+    except:
+        abort(422)
+
+    try:
       question = Question(**data)
       question.insert()
-    
-      result = {
-        'success': True,
-      }
       return jsonify(data)
 
+    except:
+        db.session.rollback()
+        abort(422)
 
-  '''
-  @TODO: 
-  Create a POST endpoint to get questions based on a search term. 
-  It should return any questions for whom the search term 
-  is a substring of the question. 
+    finally:
+        db.session.close()
 
-  TEST: Search by any phrase. The questions list will update to include 
-  only question that include that string within their question. 
-  Try using the word "title" to start. 
-  '''
+
   @app.route('/questionsSearch', methods=['POST'])
   def search_questions():
+
+    if not request.method == 'POST':
+      abort(405)
+
+    try:
       body = request.get_json()
       search_term = body['searchTerm']
-      search_query = Question.query.filter(Question.question.ilike('%' + search_term + '%'))
 
+    except: 
+      abort(422)
+      db.session.rollback()
+    
+    search_query = Question.query.filter(Question.question.ilike('%' + search_term + '%')).all()
+
+    if search_query == []:
+      abort(404)
+
+    try:
       questions = convert_questions_to_dict(search_query)
       return jsonify({
           'questions': questions,
-          'totalQuestions': len(questions),
-          'currentCategory': 'None'
+          'totalQuestions': len(questions)
           })
+
+    except:
+      abort(422)
+      db.session.rollback()
+
+    finally:
+      db.session.close()
     
   '''
-  @TODO: 
-  Create a GET endpoint to get questions based on category. 
-
   TEST: In the "List" tab / main screen, clicking on one of the 
   categories in the left column will cause only questions of that 
   category to be shown. 
   '''
-  @app.route('/categories/<int:category_id>/questions')
+  @app.route('/categories/<int:category_id>/questions', methods=['GET'])
   def get_questions_by_category(category_id):
+    if not request.method == 'GET':
+      abort(405)
+
     filtered_by_cat_questions = Question.query.filter(Question.category == category_id).all()
-    questions = []
-    for row in filtered_by_cat_questions:
-        current_question = {
-          'id' : row.id,
-          'question' : row.question,
-          'answer' : row.answer,
-          'category' : row.category,
-          'difficulty' : row.difficulty
-        }
-        questions.append(current_question)
-    return jsonify({
+    if filtered_by_cat_questions is None:
+      abort(404)
+    
+    try:
+      questions = []
+      for row in filtered_by_cat_questions:
+          current_question = {
+            'id' : row.id,
+            'question' : row.question,
+            'answer' : row.answer,
+            'category' : row.category,
+            'difficulty' : row.difficulty
+          }
+          questions.append(current_question)
+      return jsonify({
           'questions': questions,
           'totalQuestions' : len(questions),
           'current_category': questions[0]['category']
           })
- 
+    except:
+      db.session.rollback()
+      abort(422)
+    finally:
+      db.session.close()
 
   '''
   @TODO: 
@@ -231,11 +278,11 @@ def create_app(test_config=None):
     }), 422
 
   @app.errorhandler(400)
-  def not_found(error):
+  def bad_request(error):
     return jsonify({
       'success': False,
       'error' : 400,
-      "message" : "Not found"
+      "message" : "Bad Request"
     }), 400
   
   return app
