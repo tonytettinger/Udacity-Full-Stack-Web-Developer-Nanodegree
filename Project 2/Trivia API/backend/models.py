@@ -45,7 +45,7 @@ class Question(db.Model):
   def update(self):
     db.session.commit()
 
-  def delete(self):
+  def deletes(self):
     db.session.delete(self)
     db.session.commit()
 

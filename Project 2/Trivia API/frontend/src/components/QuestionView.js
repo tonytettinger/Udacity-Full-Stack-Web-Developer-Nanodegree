@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import '../stylesheets/App.css';
 import Question from './Question';
 import Search from './Search';
+import Pagination from './Pagination';
 import $ from 'jquery';
 
 class QuestionView extends Component {
@@ -26,12 +27,11 @@ class QuestionView extends Component {
       url: `/questions?page=${this.state.page}`, //TODO: update request URL
       type: "GET",
       success: (result) => {
-        console.log(result)
         this.setState({
           questions: result.questions,
-          totalQuestions: result.total_questions,
-          categories: result.categories,
-          currentCategory: result.current_category })
+          totalQuestions: result.totalQuestions,
+          categories: result.categories })
+          console.log("Total questions: ", this.state.totalQuestions)
         return;
       },
       error: (error) => {
@@ -47,7 +47,7 @@ class QuestionView extends Component {
 
   createPagination(){
     let pageNumbers = [];
-    let maxPage = Math.ceil(this.state.totalQuestions / 10)
+    let maxPage = Math.ceil(this.state.totalQuestions/10)
     for (let i = 1; i <= maxPage; i++) {
       pageNumbers.push(
         <span
@@ -64,10 +64,9 @@ class QuestionView extends Component {
       url: `/categories/${id}/questions`, //TODO: update request URL
       type: "GET",
       success: (result) => {
-        console.log(result)
         this.setState({
           questions: result.questions,
-          totalQuestions: result.total_questions,
+          totalQuestions: result.totalQuestions,
           currentCategory: result.current_category })
         return;
       },
@@ -107,11 +106,21 @@ class QuestionView extends Component {
   questionAction = (id) => (action) => {
     if(action === 'DELETE') {
       if(window.confirm('are you sure you want to delete the question?')) {
+        console.log('before ajax current', this.state.currentCategory)
         $.ajax({
           url: `/questionsDelete/${id}`, //TODO: update request URL
           type: "DELETE",
+          dataType: 'json',
+          contentType: 'application/json',
+          data: JSON.stringify({currentCategory: this.state.currentCategory}),
+          xhrFields: {
+            withCredentials: true
+          },
+          crossDomain: true,
           success: (result) => {
-            this.getQuestions();
+            this.setState({
+              questions: result.question
+            });
           },
           error: (error) => {
             alert('Unable to load questions. Please try your request again')
@@ -122,7 +131,17 @@ class QuestionView extends Component {
     }
   }
 
+  isCurrentCategory = (q) =>  {
+    if(this.state.currentCategory != null) {
+      return (this.state.categories[q.category]  == this.state.categories[this.state.currentCategory])
+    }
+    return true;
+  }
+
+  
+
   render() {
+
 
     return (
 
@@ -142,7 +161,7 @@ class QuestionView extends Component {
         </div>
         <div className="questions-list">
           <h2>Questions</h2>
-          {this.state.questions.map((q, ind) => (
+          {this.state.questions.filter((q) => this.isCurrentCategory(q)).map((q, ind) => (
             <Question
               key={q.id}
               question={q.question}
@@ -152,9 +171,11 @@ class QuestionView extends Component {
               questionAction={this.questionAction(q.id)}
             />
           ))}
-          <div className="pagination-menu">
-            {this.createPagination()}
-          </div>
+         
+        <div className="pagination-menu">
+          {this.createPagination()}
+        </div>
+
         </div>
 
       </div>

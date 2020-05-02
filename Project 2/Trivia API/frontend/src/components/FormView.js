@@ -51,7 +51,7 @@ class FormView extends Component {
       },
       crossDomain: true,
       success: (result) => {
-        console.log(result)
+        console.log("add JSON returned from backend:", result)
         document.getElementById("add-question-form").reset();
         return;
       },
