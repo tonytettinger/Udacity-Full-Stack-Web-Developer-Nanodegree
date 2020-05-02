@@ -158,6 +158,9 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(len(json_response_data['questions']), len(questions_search_query))
         delete_test_post()
     
+    '''
+    TEST: Endpoint POST /questionsSearch, 404
+    '''
     def test_search_404(self):
         insert_test_post()
         search_term = {
@@ -184,7 +187,17 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         for data in json_response_data['questions']:
             self.assertEqual(data['category'], 3)
+        delete_test_post()
+    
+    '''TEST: Endpoint GET /categories/<int:category_id>/questions, 404''' 
 
+    def test_get_categories(self):
+        insert_test_post()
+        response = self.client().get("/categories/99/questions")
+        json_response_data = json.loads(response.data)
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(json_response_data["error"], 404)
+        delete_test_post()
 
 
 # Make the tests conveniently executable

@@ -191,18 +191,14 @@ def create_app(test_config=None):
     finally:
       db.session.close()
     
-  '''
-  TEST: In the "List" tab / main screen, clicking on one of the 
-  categories in the left column will cause only questions of that 
-  category to be shown. 
-  '''
+
   @app.route('/categories/<int:category_id>/questions', methods=['GET'])
   def get_questions_by_category(category_id):
     if not request.method == 'GET':
       abort(405)
 
     filtered_by_cat_questions = Question.query.filter(Question.category == category_id).all()
-    if filtered_by_cat_questions is None:
+    if len(filtered_by_cat_questions) == 0:
       abort(404)
     
     try:
@@ -216,6 +212,7 @@ def create_app(test_config=None):
             'difficulty' : row.difficulty
           }
           questions.append(current_question)
+      db.session.commit()
       return jsonify({
           'questions': questions,
           'totalQuestions' : len(questions),
@@ -237,21 +234,46 @@ def create_app(test_config=None):
 
   @app.route('/quizzes', methods=['POST'])
   def quizzes_search():
-    body = request.get_json()
-    previous_questions = body['previous_questions']
-    quiz_category = body['quiz_category']
-    quiz_category_id = quiz_category['id']
-    filtered_question = Question.query.filter(Question.category == quiz_category_id).filter(~Question.id.in_(previous_questions)).first()
 
-    filtered_q_as_d = filtered_question.__dict__
-    current_question = {}
-    current_question['question'] = filtered_q_as_d['question']
-    current_question['answer'] = filtered_q_as_d['answer']
-    current_question['id'] = filtered_q_as_d['id']
+    if not request.method == 'POST':
+      abort(405)
 
-    return jsonify({
-          'question' : current_question
-        })
+    try:
+      body = request.get_json()
+      previous_questions = body['previous_questions']
+      quiz_category = body['quiz_category']
+      quiz_category_id = quiz_category['id']
+      print(quiz_category)
+    except:
+      abort(422)
+    
+    if quiz_category['id'] == 0:
+      filtered_question = Question.query.filter(~Question.id.in_(previous_questions)).first()
+      print('all')
+    else:
+      filtered_question = Question.query.filter(Question.category == quiz_category_id).filter(~Question.id.in_(previous_questions)).first()
+    if filtered_question is None:
+        abort(404)
+
+    try:
+      filtered_dict = filtered_question.__dict__
+      print(filtered_question)
+      current_question = {}
+      current_question['question'] = filtered_dict['question']
+      current_question['answer'] = filtered_dict['answer']
+      current_question['id'] = filtered_dict['id']
+
+      print(current_question)
+      return jsonify({
+            'question' : current_question
+          })
+
+    except:
+      db.session.rollback()
+      abort(422)
+
+    finally:
+      db.session.close()
 
   @app.errorhandler(404)
   def not_found(error):
