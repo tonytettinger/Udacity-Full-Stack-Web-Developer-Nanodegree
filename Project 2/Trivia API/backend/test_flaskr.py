@@ -128,7 +128,7 @@ class TriviaTestCase(unittest.TestCase):
     TEST: Endpoint POST /questionsPost, 422
     Missing submission field
     '''
-    def test_post_question(self):
+    def test_post_question_422(self):
         wrong_post = self.test_post
         #Simulate missing answer 
         wrong_post.pop('answer')
@@ -169,7 +169,6 @@ class TriviaTestCase(unittest.TestCase):
 
         response = self.client().post(f"/questionsSearch", data=json.dumps(search_term), content_type='application/json')
         json_response_data = json.loads(response.data)
-        #Check if the database query is the same length as the endpoint query
         self.assertEqual(response.status_code, 404)
         self.assertEqual(json_response_data["error"], 404)
         delete_test_post()
@@ -199,6 +198,35 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(json_response_data["error"], 404)
         delete_test_post()
 
+    '''TEST: Endpoint, POST  /quizzes'''
+
+    def test_quizzes(self):
+        insert_test_post()
+        quizCategory = {'type': 'all', 'id': 0}
+        quiz_post_data = {
+            'previous_questions': [],
+            'quiz_category': quizCategory
+        }
+        response = self.client().post("/quizzes", data=json.dumps(quiz_post_data), content_type='application/json')
+        json_response_data = json.loads(response.data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(json_response_data), 1)
+        delete_test_post()
+        
+    '''TEST: Endpoint, POST  /quizzes, 422 wrong category queried with no elements'''
+
+    def test_quizzes(self):
+        insert_test_post()
+        quizCategory = {'type': 'all', 'id': 9999}
+        quiz_post_data = {
+            'previous_questions': [],
+            'quiz_category': quizCategory
+        }
+        response = self.client().post("/quizzes", data=json.dumps(quiz_post_data), content_type='application/json')
+        json_response_data = json.loads(response.data)
+        self.assertEqual(response.status_code, 422)
+        self.assertEqual(json_response_data["error"], 422)
+        delete_test_post()
 
 # Make the tests conveniently executable
 if __name__ == "__main__":

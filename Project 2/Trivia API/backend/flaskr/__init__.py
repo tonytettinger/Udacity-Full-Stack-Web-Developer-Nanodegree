@@ -224,13 +224,6 @@ def create_app(test_config=None):
     finally:
       db.session.close()
 
-  '''
-  @TODO: 
-
-  TEST: In the "Play" tab, after a user selects "All" or a category,
-  one question at a time is displayed, the user is allowed to answer
-  and shown whether they were correct or not. 
-  '''
 
   @app.route('/quizzes', methods=['POST'])
   def quizzes_search():
@@ -243,17 +236,15 @@ def create_app(test_config=None):
       previous_questions = body['previous_questions']
       quiz_category = body['quiz_category']
       quiz_category_id = quiz_category['id']
-      print(quiz_category)
+
     except:
       abort(422)
     
     if quiz_category['id'] == 0:
       filtered_question = Question.query.filter(~Question.id.in_(previous_questions)).first()
-      print('all')
+      
     else:
       filtered_question = Question.query.filter(Question.category == quiz_category_id).filter(~Question.id.in_(previous_questions)).first()
-    if filtered_question is None:
-        abort(404)
 
     try:
       filtered_dict = filtered_question.__dict__
