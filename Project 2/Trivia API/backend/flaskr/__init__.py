@@ -61,8 +61,12 @@ def create_app(test_config=None):
       page = int(request.args.get('page')) - 1
       query_all = Question.query
       query_categories = Category.query.all()
+
+      if len(query_categories) == 0:
+        abort(404)
+
       questions_current_page = query_all.limit(10).offset(page)
-      question_total = len(query_categories)  
+      question_total = Question.query.count() 
       questions_list = []
       categories_dict = {}
       for row in query_categories:
@@ -82,7 +86,7 @@ def create_app(test_config=None):
           'questions': questions_list,
           'totalQuestions': question_total,
           'categories': categories_dict,
-          'currentCategory': 'None' 
+          'currentCategory': questions_list[0]['category'] 
           }
       
       return jsonify(answer)
@@ -97,7 +101,7 @@ def create_app(test_config=None):
 
   @app.route('/questionsDelete/<int:delete_id>', methods=['DELETE'])
   def delete_question(delete_id):
-    Question.query.filter_by(Id=delete_id).delete()
+    Question.query.filter_by(id=delete_id).delete()
 
     return jsonify(result = {
       'success': True,
@@ -175,7 +179,24 @@ def create_app(test_config=None):
   categories in the left column will cause only questions of that 
   category to be shown. 
   '''
-
+  @app.route('/categories/<int:category_id>/questions')
+  def get_questions_by_category(category_id):
+    filtered_by_cat_questions = Question.query.filter(Question.category == category_id).all()
+    questions = []
+    for row in filtered_by_cat_questions:
+        current_question = {
+          'id' : row.id,
+          'question' : row.question,
+          'answer' : row.answer,
+          'category' : row.category,
+          'difficulty' : row.difficulty
+        }
+        questions.append(current_question)
+    return jsonify({
+          'questions': questions,
+          'total_questions' : len(questions),
+          'current_category': questions[0]['category']
+          })
  
 
   '''
@@ -212,12 +233,35 @@ def create_app(test_config=None):
           'question' : current_question
         })
 
-
   '''
   @TODO: 
   Create error handlers for all expected errors 
   including 404 and 422. 
   '''
+
+  @app.errorhandler(404)
+  def not_found(error):
+    return jsonify({
+      'success': False,
+      'error' : 404,
+      "message" : "Resource Not found"
+    }), 404
+  
+  @app.errorhandler(422)
+  def not_found(error):
+    return jsonify({
+      'success': False,
+      'error' : 422,
+      "message" : "Unprocessable"
+    }), 422
+
+  @app.errorhandler(400)
+  def not_found(error):
+    return jsonify({
+      'success': False,
+      'error' : 400,
+      "message" : "Not found"
+    }), 400
   
   return app
 

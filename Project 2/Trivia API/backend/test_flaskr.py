@@ -59,12 +59,28 @@ class TriviaTestCase(unittest.TestCase):
         self.assertDictEqual(current_question, data)
         question_return.delete()
 
+    def test_delete_question(self):
+        data = {
+            'question': 'whatsupd?',
+            'answer': 'yes',
+            'category': 3,
+            'difficulty': 2,
+        }
+        question = Question(**data)
+        question.insert()
+        question_return = Question.query.filter_by(question='whatsupd?').first()
+        question_id = question_return.__dict__['id']
+        question_id_str = str(question_id)
+
+        res = self.client().delete('/questionsDelete/97')
+
+        self.assertEqual( None, question_id_str)
+
 
         
 
 
-
-
+        
 # Make the tests conveniently executable
 if __name__ == "__main__":
     unittest.main()
