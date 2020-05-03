@@ -76,7 +76,7 @@ def get_questions():
         abort(404)
 
     try:
-        questions_current_page = query_all.limit(10).offset(page)  
+        questions_current_page = query_all.limit(10).offset(page)
         categories_dict = {}
         for row in query_categories:
             categories_dict[row.id] = row.type
@@ -169,7 +169,7 @@ def search_questions():
         body = request.get_json()
         search_term = body['searchTerm']
 
-    except: 
+    except:
         abort(422)
         db.session.rollback()
 
@@ -201,7 +201,7 @@ def get_questions_by_category(category_id):
     filtered_by_cat_questions = Question.query.filter(Question.category == category_id).all()
     if len(filtered_by_cat_questions) == 0:
         abort(404)
-    
+
     try:
         questions = []
         for row in filtered_by_cat_questions:
@@ -213,21 +213,21 @@ def get_questions_by_category(category_id):
               'difficulty': row.difficulty
             }
             questions.append(current_question)
-      db.session.commit()
-      return jsonify({
-          'questions': questions,
-          'totalQuestions': len(questions),
-          'current_category': questions[0]['category']
-          })
+        db.session.commit()
+        return jsonify({
+            'questions': questions,
+            'totalQuestions': len(questions),
+            'current_category': questions[0]['category']
+            })
     except:
-      db.session.rollback()
-      abort(422)
+        db.session.rollback()
+        abort(422)
     finally:
-      db.session.close()
+        db.session.close()
 
 
-  @app.route('/quizzes', methods=['POST'])
-  def quizzes_search():
+@app.route('/quizzes', methods=['POST'])
+def quizzes_search():
 
     if not request.method == 'POST':
         abort(405)
@@ -236,10 +236,10 @@ def get_questions_by_category(category_id):
     previous_questions = body['previous_questions']
     quiz_category = body['quiz_category']
     quiz_category_id = quiz_category['id']
-    
+
     if quiz_category['id'] == 0:
         filtered_question = Question.query.filter(~Question.id.in_(previous_questions)).first()
-      
+
     else:
         filtered_question = Question.query.filter(Question.category == quiz_category_id).filter(~Question.id.in_(previous_questions)).first()
 
@@ -263,8 +263,8 @@ def get_questions_by_category(category_id):
         db.session.close()
 
 
-  @app.errorhandler(404)
-  def not_found(error):
+@app.errorhandler(404)
+def not_found(error):
     return jsonify({
       'success': False,
       'error': 404,
@@ -272,17 +272,17 @@ def get_questions_by_category(category_id):
     }), 404
 
 
-  @app.errorhandler(405)
-  def not_allowed(error):
+@app.errorhandler(405)
+def not_allowed(error):
     return jsonify({
       'success': False,
-      'error' : 405,
-      "message" : "Not Allowed"
+      'error': 405,
+      "message": "Not Allowed"
     }), 405
 
 
-  @app.errorhandler(422)
-  def unprocessable(error):
+@app.errorhandler(422)
+def unprocessable(error):
     return jsonify({
       'success': False,
       'error': 422,
@@ -290,15 +290,13 @@ def get_questions_by_category(category_id):
     }), 422
 
 
-  @app.errorhandler(400)
-  def bad_request(error):
+@app.errorhandler(400)
+def bad_request(error):
     return jsonify({
       'success': False,
       'error': 400,
       "message": "Bad Request"
     }), 400
-  
-  return app
 
 
-    
+return app
