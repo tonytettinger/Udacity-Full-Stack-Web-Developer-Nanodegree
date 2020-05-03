@@ -16,7 +16,13 @@ This application is capable of the following tasks:
 
 Base url: At present this app can run locally on localhost:3000. 
 
-To start the application start the backend from the ./backend folder running 
+To start the application first install the required Python dependencies in the ./backend folder running
+
+```
+pip install -r requirements.txt
+```
+
+This will install all of the required packages we selected within the `requirements.txt` file. Following this start the back-end server with the following commands:
 
 ```
 export FLASK_APP=flaskr
