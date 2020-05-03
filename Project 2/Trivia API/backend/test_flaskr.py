@@ -5,15 +5,17 @@ from flask_sqlalchemy import SQLAlchemy
 from flaskr import create_app
 from models import setup_db, Question, Category
 
+
 def query_to_dict(query):
-        query_dict = query.__dict__
-        result_dict = {
-                'question' : query_dict['question'],
-                'answer' : query_dict['answer'],
-                'category' : query_dict['category'],
-                'difficulty' : query_dict['difficulty']
-        }
-        return result_dict
+    query_dict = query.__dict__
+    result_dict = {
+            'question': query_dict['question'],
+            'answer': query_dict['answer'],
+            'category': query_dict['category'],
+            'difficulty': query_dict['difficulty']
+    }
+    return result_dict
+
 
 def insert_test_post():
     data = {
@@ -26,14 +28,17 @@ def insert_test_post():
     question.insert()
     return data
 
+
 def query_test_post():
     query = Question.query.filter_by(question="Test Question?").first()
     return query
+
 
 def delete_test_post():
     query = Question.query.filter_by(question="Test Question?").first()
     if query is not None:
         query.deletes()
+
 
 class TriviaTestCase(unittest.TestCase):
     """This class represents the trivia test case"""
@@ -46,10 +51,10 @@ class TriviaTestCase(unittest.TestCase):
         self.database_path = "postgres://{}/{}".format('localhost:5432', self.database_name)
         setup_db(self.app, self.database_path)
         self.test_post = {
-        'question': 'Test Question?',
-        'answer': 'Yes this is a test question.',
-        'category': 3,
-        'difficulty': 2,
+            'question': 'Test Question?',
+            'answer': 'Yes this is a test question.',
+            'category': 3,
+            'difficulty': 2,
         }
         # binds the app to the current context
         with self.app.app_context():
@@ -57,7 +62,7 @@ class TriviaTestCase(unittest.TestCase):
             self.db.init_app(self.app)
             # create all tables
             self.db.create_all()
-    
+
     def tearDown(self):
         """Executed after reach test"""
         pass
@@ -89,16 +94,16 @@ class TriviaTestCase(unittest.TestCase):
         post = query_test_post()
         post_id = post.id
 
-        #Check the post exists before deleting
+        # Check the post exists before deleting
         self.assertIsNotNone(post)
         delete_json = {
             'currentCategory' : 3
         }
-        #Click on the trash icon
+        # Click on the trash icon
         self.client().delete(f"/questionsDelete/{post_id}", data=json.dumps(delete_json), content_type='application/json')
-        #Removal persist in the database
+        # Removal persist in the database
         deleted = Question.query.get(post_id)
-        self.assertIsNone( deleted )
+        self.assertIsNone(deleted)
     """
     TEST: Endpoint DELETE /questionsDelete/<int:post_id>, 405 
     Method Not Allowed when requesting delete using wrong method.
@@ -106,10 +111,10 @@ class TriviaTestCase(unittest.TestCase):
     def test_delete_wrong_method_error_handling(self):
         insert_test_post()
         post = query_test_post()
-        #Check the post exists before deleting
+        # Check the post exists before deleting
         self.assertIsNotNone(post)
 
-        #Click on the trash icon
+        # Click on the trash icon
         response = self.client().get(f"/questionsPost", data=json.dumps(self.test_post), content_type='application/json')
         json_response_data = json.loads(response.data)
         self.assertEqual(response.status_code, 405)
@@ -130,10 +135,10 @@ class TriviaTestCase(unittest.TestCase):
     '''
     def test_post_question_422(self):
         wrong_post = self.test_post
-        #Simulate missing answer 
+        # Simulate missing answer 
         wrong_post.pop('answer')
 
-        response =self.client().post(f"/questionsPost", data=json.dumps(wrong_post), content_type='application/json')
+        response = self.client().post(f"/questionsPost", data=json.dumps(wrong_post), content_type='application/json')
         json_response_data = json.loads(response.data)
         self.assertEqual(response.status_code, 422)
         self.assertEqual(json_response_data["error"], 422)
@@ -150,14 +155,14 @@ class TriviaTestCase(unittest.TestCase):
         search_term = {
             'searchTerm': 'Test Question?'
         }
-        #First do a search by SQL directly from the database
+        # First do a search by SQL directly from the database
         questions_search_query = Question.query.filter_by(question="Test Question?").all()
         response = self.client().post(f"/questionsSearch", data=json.dumps(search_term), content_type='application/json')
         json_response_data = json.loads(response.data)
-        #Check if the database query is the same length as the endpoint query
+        # Check if the database query is the same length as the endpoint query
         self.assertEqual(len(json_response_data['questions']), len(questions_search_query))
         delete_test_post()
-    
+
     '''
     TEST: Endpoint POST /questionsSearch, 404
     '''
@@ -187,7 +192,7 @@ class TriviaTestCase(unittest.TestCase):
         for data in json_response_data['questions']:
             self.assertEqual(data['category'], 3)
         delete_test_post()
-    
+
     '''TEST: Endpoint GET /categories/<int:category_id>/questions, 404''' 
 
     def test_get_categories(self):
@@ -212,7 +217,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(json_response_data), 1)
         delete_test_post()
-        
+    
     '''TEST: Endpoint, POST  /quizzes, 422 wrong category queried with no elements'''
 
     def test_quizzes(self):
@@ -229,5 +234,7 @@ class TriviaTestCase(unittest.TestCase):
         delete_test_post()
 
 # Make the tests conveniently executable
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -61,7 +61,6 @@ class QuizView extends Component {
       },
       crossDomain: true,
       success: (result) => {
-        console.log(result.question)
         this.setState({
           showAnswer: false,
           previousQuestions: previousQuestions,
@@ -105,7 +104,6 @@ class QuizView extends Component {
               <div className="choose-header">Choose Category</div>
               <div className="category-holder">
                   <div className="play-category" onClick={() => this.selectCategory({type:'all'})}>ALL</div>
-                  {console.log(this.state.categories)}
                   {Object.keys(this.state.categories).map(id => {
                   return (
                     <div
