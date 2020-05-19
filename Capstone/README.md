@@ -188,10 +188,7 @@ This endpoint allows you to PATCH an existing movie.
 
 **Request Arguments:**
 
-- _question_ (Text)
-- _answer_ (Text)
-- _difficulty_ (integer) 1 to 4.
-- _category_ (integer) 1 to 6.
+A JSON object containing the movie details title and release date.
 
 **Returns:** An object with a success message, and the patched movie in JSON format.
 
