@@ -1,4 +1,4 @@
-# Udacity-Full-Stack-Web-Developer
+# Udacity Full Stack Developer Nanodegree Projects
 
 Udacity's Full Stack Web Developer Nanodegree Project repository
 
