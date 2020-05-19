@@ -51,6 +51,6 @@ Create a container for a Flask web app using Docker and deploy the container to 
 
 Create a fully functional back-end which uses SQL database, utilizes RBAC checking with Oauth2.
 Deploy on Heroku and provide an automated testing suite to verify all functionality.
-Document dependencies, install instruction and endpoints. ]
+Document dependencies, install instruction and endpoints
 
-    - [code](https://github.com/tonytettinger/Udacity-Full-Stack-Web-Developer-Nanodegree/tree/master/Capstone)
+  - [code](https://github.com/tonytettinger/Udacity-Full-Stack-Web-Developer-Nanodegree/tree/master/Capstone)
