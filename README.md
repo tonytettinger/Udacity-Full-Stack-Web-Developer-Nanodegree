@@ -15,7 +15,7 @@ The fictitious startup Fy-yur is building a website that facilitates bookings be
   venues where the artist has played/will be playing.
   The goal of this project is to build out the data models for this booking application.
 
-  - [code](https://github.com/tonytettinger/Udacity-Full-Stack-Web-Developer-Nanodegree/tree/master/Project%201/fyyur)
+  - [code](https://github.com/tonytettinger/Udacity-Full-Stack-Web-Developer-Nanodegree/tree/master/Artist%20and%20Venues%20Full%20Stack%20API)
 
 - [x] **Project 2** - Trivia API
 
@@ -26,7 +26,7 @@ Build a Trivia API. The API will allow users to:
 - Modify the difficulty rating of questions.
   The goal of this project is to use APIs to control and manage a web application using existing data models.
 
-  - [code]()
+  - [code](https://github.com/tonytettinger/Udacity-Full-Stack-Web-Developer-Nanodegree/tree/master/Trivia%20Full%20Stack%20API)
 
 - [x] **Project 3** - Coffee Shop Full Stack
 
@@ -37,7 +37,7 @@ Build the backend for a coffee shop application. Add user accounts and authentic
 - Allow the shop baristas to see the recipe information.
 - Allow the shop managers to create new drinks and edit existing drinks.
 
-  - [code]()
+  - [code](https://github.com/tonytettinger/Udacity-Full-Stack-Web-Developer-Nanodegree/tree/master/Coffee%20Shop%20Full%20Stack%20App)
 
 - [x] **Project 4** - Deploy Your Flask App to Kubernetes Using EKS
 
@@ -45,7 +45,7 @@ Create a container for a Flask web app using Docker and deploy the container to 
 
 - Use automated testing to prevent bad code from being deployed and monitor your app’s performance using AWS tools.
 
-  - [code]()
+  - [code](https://github.com/tonytettinger/Udacity-Full-Stack-Web-Developer-Nanodegree/tree/master/Flask%20App%20Deployment%20AWS%20Docker)
 
 - [x] **Project 5** - Capstone Full Stack Project
 
@@ -53,4 +53,4 @@ Create a fully functional back-end which uses SQL database, utilizes RBAC checki
 Deploy on Heroku and provide an automated testing suite to verify all functionality.
 Document dependencies, install instruction and endpoints. ]
 
-    - [code]()
+    - [code](https://github.com/tonytettinger/Udacity-Full-Stack-Web-Developer-Nanodegree/tree/master/Capstone)
